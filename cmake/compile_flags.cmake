@@ -1,3 +1,8 @@
+# Use static runtime library (/MT) for MSVC builds
+if (MSVC)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "MSVC runtime library")
+endif()
+
 if (MSVC)
   set(VISAGE_DEFINE_FLAG "/D")
 else()
@@ -16,6 +21,7 @@ endif()
 
 if (MSVC)
   add_compile_options(/MP /wd4244 /wd4267 /JMC)
+  add_compile_options($<$<CONFIG:Debug>:/MTd>$<$<NOT:$<CONFIG:Debug>>:/MT>)
 else()
   add_compile_options(-Wno-conversion -Wno-sign-conversion)
 endif()

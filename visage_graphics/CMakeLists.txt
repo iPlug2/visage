@@ -65,6 +65,13 @@ FetchContent_Declare(bgfx GIT_REPOSITORY https://github.com/bkaradzic/bgfx.cmake
   GIT_TAG v1.129.8958-499
   EXCLUDE_FROM_ALL
 )
+
+# Force static runtime for FetchContent dependencies before they are configured
+if(MSVC)
+  set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
 FetchContent_MakeAvailable(bgfx)
 
 FetchContent_Declare(freetype GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
@@ -74,6 +81,18 @@ FetchContent_Declare(freetype GIT_REPOSITORY https://gitlab.freedesktop.org/free
 )
 FetchContent_MakeAvailable(freetype)
 set(CMAKE_MESSAGE_LOG_LEVEL "NOTICE")
+
+# Apply static runtime library (/MT) to all FetchContent dependencies on MSVC
+if (MSVC)
+  set_target_properties(bgfx bx bimg bimg_decode bimg_encode freetype
+    PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  target_compile_options(bx PRIVATE $<$<CONFIG:Debug>:/MTd>$<$<NOT:$<CONFIG:Debug>>:/MT>)
+  target_compile_options(bimg PRIVATE $<$<CONFIG:Debug>:/MTd>$<$<NOT:$<CONFIG:Debug>>:/MT>)
+  target_compile_options(bimg_decode PRIVATE $<$<CONFIG:Debug>:/MTd>$<$<NOT:$<CONFIG:Debug>>:/MT>)
+  target_compile_options(bimg_encode PRIVATE $<$<CONFIG:Debug>:/MTd>$<$<NOT:$<CONFIG:Debug>>:/MT>)
+  target_compile_options(bgfx PRIVATE $<$<CONFIG:Debug>:/MTd>$<$<NOT:$<CONFIG:Debug>>:/MT>)
+  target_compile_options(freetype PRIVATE $<$<CONFIG:Debug>:/MTd>$<$<NOT:$<CONFIG:Debug>>:/MT>)
+endif()
 
 if (MSVC)
   set(DISABLE_WARNINGS /W0)
